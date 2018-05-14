@@ -1,8 +1,5 @@
 const es = e => document.querySelector(e)
 
-// 每个黑点相距 20
-const LEN = 20
-
 // 点
 class Point {
   constructor(x, y) {
@@ -10,7 +7,7 @@ class Point {
     this.y = y
   }
 
-  drawPoint(ctx) {
+  draw (ctx) {
     ctx.beginPath()
     ctx.arc(this.x, this.y, 1, 0, Math.PI*2, true)
     ctx.closePath()
@@ -22,14 +19,16 @@ class Point {
 class Shape {
   constructor(points) {
     this.points = points
+    this.isDrag = false
+    this._reset()
   }
 
-  drawShape (ctx) {
+  draw (ctx) {
     let fp = this.points[0]
     ctx.beginPath()
     this.points.forEach((val, index) => {
-      let x = val.x
-      let y = val.y
+      let x = val.x + this.translateX
+      let y = val.y + this.translateY
       if (index === 0) {
         ctx.moveTo(x, y)
       } else {
@@ -39,34 +38,80 @@ class Shape {
 
     ctx.fill()
   }
+
+  setBasePoint (x, y) {
+    this.baseX = x
+    this.baseY = y
+  }
+
+  translate (x, y) {
+    this.translateX = x - this.baseX
+    this.translateY = y - this.baseY
+  }
+
+  goNewPosition () {
+    let realXTranslate = 0
+    let realYtranslate = 0
+
+    // 先移动到整点
+    let p = this.points[0]
+    let x = p.x + this.translateX
+    let y = p.y + this.translateY
+
+    x = x - x % 20
+    y = y - y % 20
+
+    this.translateX = x - p.x
+    this.translateY = y - p.y
+
+    this.points.forEach(v => {
+      let x = v.x + this.translateX
+      let y = v.y + this.translateY
+
+      // 不考虑图形大于整个canvas的情况
+      if (x < 20) {
+        this.translateX = 20 - v.x
+      }
+
+      if (x > 380) {
+        this.translateX = 380 - vx
+      }
+
+      if (y < 20) {
+        this.translateY = 20 - v.y
+      }
+
+      if (v > 380) {
+        this.translateY = 380 - v.y
+      }
+    })
+
+    this.points.forEach(v => {
+      v.x = v.x + this.translateX
+      v.y = v.y + this.translateY
+    })
+    // 
+    this._reset()
+  }
+
+  _reset () {
+    this.baseX = 0
+    this.baseY = 0
+    this.translateX = 0
+    this.translateY = 0
+  }
+
+  // 是否在该形状内
+  // point
+  isInShape (x, y) {
+    let vs = this.points.map(v => [v.x, v.y])
+    return pointInPolygon(x, y, vs)
+  }
 }
 
 window.onload = () => {
-  const canvas = es('#canvas')
-  const ctx    = canvas.getContext('2d')
-  
-  const width  = canvas.width
-  const height = canvas.height
-  
-  // 所有点
-  const POINTS = []
-
-  // 画点
-  for (let x = LEN; x < width; x += LEN) {
-    for (let y = LEN; y < height; y += LEN) {
-      POINTS.push(new Point(x, y))
-    }
-  }
-
-  POINTS.forEach(v => v.drawPoint(ctx))
-
-  let points = []
-  points.push(new Point(40, 40))
-  points.push(new Point(40, 60))
-  points.push(new Point(40, 80))
-  points.push(new Point(60, 80))
-  points.push(new Point(80, 80))
-
-  let shape = new Shape(points)
-  shape.drawShape(ctx)
+  let game = new Game(30, {}, g => {
+    let scene = new Scene(g)
+    g.runWithScene(scene)
+  })
 }
