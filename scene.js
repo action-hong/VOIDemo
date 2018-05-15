@@ -49,6 +49,10 @@ class Scene {
       let y = event.offsetY
       if (this.drawShape) {
         this.drawShape.translate(x, y)
+
+        if (!this.drawShape.isDraging) {
+          this.drawShape = null
+        }
       }
 
     }

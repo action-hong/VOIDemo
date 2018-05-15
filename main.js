@@ -57,11 +57,21 @@ class Shape {
   translate (x, y) {
     this.translateX = x - this.baseX
     this.translateY = y - this.baseY
+
+    // 检查, 如果有点超出范围了
+    if (this.points.map(v => [v.x + this.translateX, v.y + this.translateY])
+                    .some(v => Math.min(v[0], v[1]) < 0 || Math.max(v[0], v[1]) > 400)) {
+                      this.goNewPosition()
+                    }
   }
 
   goNewPosition () {
-    let realXTranslate = 0
-    let realYtranslate = 0
+    if (!this.isDraging) {
+      return
+    }
+
+    let realTranslateX = 0
+    let realTranslateY = 0
 
     // 先移动到整点
     let p = this.points[0]
@@ -71,34 +81,34 @@ class Shape {
     x = roundTo20(x)
     y = roundTo20(y)
 
-    this.translateX = x - p.x
-    this.translateY = y - p.y
+    realTranslateX = x - p.x
+    realTranslateY = y - p.y
 
     this.points.forEach(v => {
-      let x = v.x + this.translateX
-      let y = v.y + this.translateY
+      let x = v.x + realTranslateX
+      let y = v.y + realTranslateY
 
       // 不考虑图形大于整个canvas的情况
       if (x < 20) {
-        this.translateX = 20 - v.x
+        realTranslateX = 20 - v.x
       }
 
       if (x > 380) {
-        this.translateX = 380 - vx
+        realTranslateX = 380 - v.x
       }
 
       if (y < 20) {
-        this.translateY = 20 - v.y
+        realTranslateY = 20 - v.y
       }
 
-      if (v > 380) {
-        this.translateY = 380 - v.y
+      if (y > 380) {
+        realTranslateY = 380 - v.y
       }
     })
 
     this.points.forEach(v => {
-      v.x = v.x + this.translateX
-      v.y = v.y + this.translateY
+      v.x = v.x + realTranslateX
+      v.y = v.y + realTranslateY
     })
     // 
     this._reset()
