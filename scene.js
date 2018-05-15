@@ -99,7 +99,7 @@ class Scene {
         // 归为点上
         this.drawShape.goNewPosition()
         this.drawShape = null
-        this.checkWin()
+        this.nextTick(() => this.checkWin())
       }
     }
   }
@@ -119,4 +119,10 @@ class Scene {
     // do nothing
   }
 
+  // 下一帧
+  nextTick (func) {
+    setTimeout(() => {
+      func()
+    }, 2000 / window.fps);
+  }
 }
