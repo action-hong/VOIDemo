@@ -1,5 +1,14 @@
 const es = e => document.querySelector(e)
 
+// 返回离x最近的 能被20整取的数
+const roundTo20 = x => {
+  let tmp = x % 20
+  if (tmp > 10) {
+    return x + (20 - tmp)
+  }
+  return x - tmp
+}
+
 // 点
 class Point {
   constructor(x, y) {
@@ -19,7 +28,7 @@ class Point {
 class Shape {
   constructor(points) {
     this.points = points
-    this.isDrag = false
+    this.isDraging = false
     this._reset()
   }
 
@@ -42,6 +51,7 @@ class Shape {
   setBasePoint (x, y) {
     this.baseX = x
     this.baseY = y
+    this.isDraging = true
   }
 
   translate (x, y) {
@@ -58,8 +68,8 @@ class Shape {
     let x = p.x + this.translateX
     let y = p.y + this.translateY
 
-    x = x - x % 20
-    y = y - y % 20
+    x = roundTo20(x)
+    y = roundTo20(y)
 
     this.translateX = x - p.x
     this.translateY = y - p.y
@@ -99,6 +109,7 @@ class Shape {
     this.baseY = 0
     this.translateX = 0
     this.translateY = 0
+    this.isDraging = false
   }
 
   // 是否在该形状内

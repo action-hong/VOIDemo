@@ -1,10 +1,19 @@
 const LEN = 20
 
+const shapes = [
+  [[40, 40], [40, 80], [80, 80]],
+  [[100, 100], [100, 160], [160, 160]],
+  [[200, 200], [200, 260], [260, 260], [260, 200]],
+]
+
+const createShape = shape => {
+  return new Shape(shape.map(v => new Point(v[0], v[1])))
+}
+
 class Scene {
   constructor (game) {
     this.game = game
     this.points = []
-    this.shapes = []
     this.drawShape = null
 
     let {width, height} = game.canvas
@@ -14,13 +23,7 @@ class Scene {
       }
     }
 
-    let points = []
-    points.push(new Point(40, 40))
-    points.push(new Point(40, 80))
-    points.push(new Point(80, 80))
-  
-    let shape = new Shape(points)
-    this.shapes.push(shape)
+    this.shapes = shapes.map(v => createShape(v))
 
     this.init()
   }
@@ -61,7 +64,10 @@ class Scene {
 
   draw (ctx) {
     this.points.forEach(v => v.draw(ctx))
+    ctx.save()
+    ctx.globalCompositeOperation = 'xor'
     this.shapes.forEach(v => v.draw(ctx))
+    ctx.globalCompositeOperation = 'source-over'
   }
 
   update (ctx) {
