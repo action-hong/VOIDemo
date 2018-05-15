@@ -11,9 +11,10 @@ const createShape = shape => {
 }
 
 class Scene {
-  constructor (game) {
+  constructor (game, index = 0) {
     this.game = game
     this.points = []
+    this.shapes = []
     this.drawShape = null
 
     let {width, height} = game.canvas
@@ -22,10 +23,47 @@ class Scene {
         this.points.push(new Point(x, y))
       }
     }
-
-    this.shapes = shapes.map(v => createShape(v))
-
     this.init()
+
+    this.goLevel(index)
+  }
+
+  // 到第几个关卡
+  goLevel (index) {
+    let level = fetchLevel(index)
+    if (level) {
+      // 当前关卡
+      this.currentLevel = index
+      this.initNewLevel(level)
+    } else {
+      alert('已经是最后一关了')
+    }
+
+  }
+
+  initNewLevel (level) {
+    this.shapes = level.shapes.map(v => createShape(v))
+    this.answer = level.answer
+  }
+
+  // 检查过关
+  checkWin () {
+    // 取第一个点, 与其他所有点的差值与答案相同, 即过关
+    let firstP = this.shapes[0].points[0]
+    let {x, y} = firstP
+
+    for (let i = 1; i < this.shapes.length; i++) {
+      let p = this.shapes[i].points[0]
+      let a = this.answer[i - 1]
+      if ((x - p.x) === a[0] && (y - p.y) === a[1]) {
+        continue
+      }
+      return
+    }
+
+    // 到这里说明答案正确
+    alert('恭喜你过关了')
+    this.goLevel(this.currentLevel + 1)
   }
 
   init () {
@@ -54,7 +92,6 @@ class Scene {
           this.drawShape = null
         }
       }
-
     }
 
     canvas.onmouseup = event => {
@@ -62,21 +99,24 @@ class Scene {
         // 归为点上
         this.drawShape.goNewPosition()
         this.drawShape = null
+        this.checkWin()
       }
     }
   }
 
   draw (ctx) {
+    ctx.globalCompositeOperation = 'source-over'
     this.points.forEach(v => v.draw(ctx))
     ctx.save()
     ctx.globalCompositeOperation = 'xor'
     this.shapes.forEach(v => v.draw(ctx))
     ctx.globalCompositeOperation = 'source-over'
+
+    ctx.restore()
   }
 
   update (ctx) {
     // do nothing
   }
-
 
 }
